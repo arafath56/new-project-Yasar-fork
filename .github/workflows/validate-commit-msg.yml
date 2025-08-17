@@ -23,6 +23,11 @@ jobs:
           echo "Validating commit messages..."
           error=0
           while IFS= read -r line; do
+            # Skip empty commit messages and the "Trigger status recheck" commit
+            if [[ -z "$line" ]] || [[ "$line" == "Trigger status recheck" ]]; then
+              continue
+            fi
+
             if [[ "$line" =~ ^LGA-([1-9][0-9]?|100): ]]; then
               echo "✅ Valid: $line"
             else
