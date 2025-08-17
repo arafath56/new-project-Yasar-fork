@@ -23,7 +23,7 @@ jobs:
           echo "Validating commit messages..."
           error=0
           while IFS= read -r line; do
-            if [[ "$line" =~ ^LGA-([1-9][0-9]?$|100): ]]; then
+            if [[ "$line" =~ ^LGA-([1-9][0-9]?|100): ]]; then
               echo "✅ Valid: $line"
             else
               echo "❌ Invalid commit message: $line"
