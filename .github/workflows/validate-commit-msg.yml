@@ -1,5 +1,3 @@
-#validate commit messages in pull requests
-
 name: Validate Commit Messages
 
 on:
@@ -11,35 +9,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
       - name: Get commit messages in the PR
-        id: commits
         run: |
-          echo "Getting commits in PR..."
-          git fetch origin ${{ github.base_ref }} --depth=1
+          echo "Fetching commits for PR #${{ github.event.pull_request.number }}"
           commits=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" \
             | jq -r '.[].commit.message')
+
           echo "$commits" > commit_messages.txt
 
-      - name: Validate commit messages contain Jira ticket
+      - name: Validate commit messages
         run: |
           echo "Validating commit messages..."
           error=0
           while IFS= read -r line; do
-            if [[ ! "$line" =~ ^LGA(1|100)-[0-9]+ ]]; then
+            if [[ "$line" =~ ^LGA-([1-9][0-9]?$|100): ]]; then
+              echo "✅ Valid: $line"
+            else
               echo "❌ Invalid commit message: $line"
               error=1
-            else
-              echo "✅ Valid: $line"
             fi
           done < commit_messages.txt
 
           if [ $error -ne 0 ]; then
-            echo "One or more commit messages are invalid."
+            echo "✖ One or more commit messages are invalid."
             exit 1
           else
-            echo "All commit messages are valid."
+            echo "✔ All commit messages are valid."
           fi
