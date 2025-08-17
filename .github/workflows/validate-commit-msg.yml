@@ -22,7 +22,7 @@ jobs:
 
           echo "$commits" > commit_messages.txt
 
-      - name: Validate commit messages
+      - name: Validate Commit Messages
         run: |
           echo "Validating commit messages..."
           error=0
