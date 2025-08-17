@@ -23,11 +23,13 @@ jobs:
           echo "Validating commit messages..."
           error=0
           while IFS= read -r line; do
-            # Skip empty commit messages and the "Trigger status recheck" commit
-            if [[ -z "$line" ]] || [[ "$line" == "Trigger status recheck" ]]; then
+            # Skip empty messages and allowed automated commit prefixes
+            if [[ -z "$line" ]] || [[ "$line" == "Trigger status recheck" ]] || [[ "$line" =~ ^(ci:|docs:|chore:) ]]; then
+              echo "ℹ️ Skipping commit message: $line"
               continue
             fi
 
+            # Check Jira-format commit message: LGA-1: to LGA-100:
             if [[ "$line" =~ ^LGA-([1-9][0-9]?|100): ]]; then
               echo "✅ Valid: $line"
             else
