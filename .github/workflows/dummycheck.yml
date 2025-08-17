@@ -2,7 +2,8 @@ name: Dummy Check
 
 on:
   pull_request:
-    branches: [main]
+    types: [opened, synchronize]
+  merge_group:
 
 jobs:
   dummy:
