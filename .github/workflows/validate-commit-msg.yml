@@ -5,12 +5,11 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  validate-commits:
-    name: Validate Commit Messages
+  validate-commits:  # MUST match the job ID expected in branch protection
+    name: Validate Commit Messages  # Optional visual name
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ Add this step at the top
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -28,13 +27,13 @@ jobs:
           echo "Validating commit messages..."
           error=0
           while IFS= read -r line; do
-            # Skip allowed automated commit prefixes
+            # Skip empty or allowed commit types (used for retries or automation)
             if [[ -z "$line" ]] || [[ "$line" == "Trigger status recheck" ]] || [[ "$line" =~ ^(ci:|docs:|chore:) ]]; then
               echo "ℹ️ Skipping commit message: $line"
               continue
             fi
 
-            # Check for Jira-style commit messages like "LGA-1: Fix something"
+            # Check for valid Jira-style ticket (LGA-1 to LGA-100)
             if [[ "$line" =~ ^LGA-([1-9][0-9]?|100): ]]; then
               echo "✅ Valid: $line"
             else
