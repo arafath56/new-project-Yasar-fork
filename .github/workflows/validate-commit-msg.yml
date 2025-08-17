@@ -6,9 +6,14 @@ on:
 
 jobs:
   validate-commits:
+    name: Validate Commit Messages
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ Add this step at the top
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Get commit messages in the PR
         run: |
           echo "Fetching commits for PR #${{ github.event.pull_request.number }}"
@@ -23,13 +28,13 @@ jobs:
           echo "Validating commit messages..."
           error=0
           while IFS= read -r line; do
-            # Skip empty messages and allowed automated commit prefixes
+            # Skip allowed automated commit prefixes
             if [[ -z "$line" ]] || [[ "$line" == "Trigger status recheck" ]] || [[ "$line" =~ ^(ci:|docs:|chore:) ]]; then
               echo "ℹ️ Skipping commit message: $line"
               continue
             fi
 
-            # Check Jira-format commit message: LGA-1: to LGA-100:
+            # Check for Jira-style commit messages like "LGA-1: Fix something"
             if [[ "$line" =~ ^LGA-([1-9][0-9]?|100): ]]; then
               echo "✅ Valid: $line"
             else
