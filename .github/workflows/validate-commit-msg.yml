@@ -1,43 +1,35 @@
+# Validate commit messages in pull requests
+
 name: Validate Commit Messages
 
 on:
   pull_request:
     types: [opened, synchronize]
-  merge_group:
-    #branches: [main]
-    
 
 jobs:
-  validate-commits:  # MUST match the job ID expected in branch protection
-    name: Validate Commit Messages  # Optional visual name
+  validate-commits:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v3
 
       - name: Get commit messages in the PR
+        id: commits
         run: |
-          echo "Fetching commits for PR #${{ github.event.pull_request.number }}"
+          echo "Getting commits in PR..."
           commits=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" \
-            | jq -r '.[].commit.message')
-
+            | jq -r '.[].commit.message | split("\n")[0]')
           echo "$commits" > commit_messages.txt
 
-      - name: Validate Commit Messages
+      - name: Validate commit messages contain Jira ticket
         run: |
           echo "Validating commit messages..."
           error=0
           while IFS= read -r line; do
-            # Skip empty or allowed commit types (used for retries or automation)
-            if [[ -z "$line" ]] || [[ "$line" == "Trigger status recheck" ]] || [[ "$line" =~ ^(ci:|docs:|chore:) ]]; then
-              echo "ℹ️ Skipping commit message: $line"
-              continue
-            fi
-
-            # Check for valid Jira-style ticket (LGA-1 to LGA-100)
-            if [[ "$line" =~ ^LGA-([1-9][0-9]?|100): ]]; then
+            # Require format: LGA-1: message  … up to LGA-100: message
+            if [[ "$line" =~ ^LGA-([1-9][0-9]?|100):\ .+ ]]; then
               echo "✅ Valid: $line"
             else
               echo "❌ Invalid commit message: $line"
