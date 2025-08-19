@@ -5,7 +5,11 @@ name: Validate Commit Messages
 on:
   pull_request:
     types: [opened, synchronize]
+  push:
+    branches:
+      - main   # 👈 add this
 
+      
 jobs:
   validate-commits:
     runs-on: ubuntu-latest
