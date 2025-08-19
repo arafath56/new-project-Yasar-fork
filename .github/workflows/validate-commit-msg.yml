@@ -29,6 +29,13 @@ jobs:
           error=0
           while IFS= read -r line; do
             
+            
+            if [[ "$line" =~ ^Merge ]]; then
+              echo "ℹ️  Skipping auto-generated commit: $line"
+              continue
+            fi
+
+            
             if [[ "$line" =~ ^LGA-([1-9][0-9]?|100):\ .+ ]]; then
               echo "✅ Valid: $line"
             else
